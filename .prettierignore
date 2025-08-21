@@ -1,0 +1,14 @@
+# Игнорируем сгенерированные файлы
+dist
+build
+coverage
+
+# Игнорируем зависимости
+node_modules
+
+# Игнорируем файлы конфигурации
+.eslintrc.cjs
+.prettierrc
+package.json
+package-lock.json
+tsconfig.json 

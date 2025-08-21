@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@shared/*": ["src/shared/*"],
+      "@shared/components/*": ["src/shared/components/*"],
+      "@pages/*": ["src/pages/*"],
+      "@store/*": ["src/store/*"],
+      "@services/*": ["src/services/*"],
+      "@assets/*": ["src/assets/*"],
+      "@mocks/*": ["src/mocks/*"],
+      "@features/*": ["src/features/*"],
+      "@config/*": ["src/config/*"]
+    }
+  }
+}
