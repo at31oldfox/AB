@@ -1,5 +1,7 @@
 import { specialistDetailsMock } from '@mocks/specialistDetails'
-import axios from 'axios'
+import { apiClient } from './client'
+import { API_CONFIG } from './config'
+import { isMocksEnabled, delay, handleApiError, validateParams, formatQueryParams } from './utils'
 
 import { IBranch, IService, ISpecialist, ITimeSlot } from '@store/bookingStore.types'
 import { ISpecialistDetails } from '@store/bookingStore.types'
@@ -13,21 +15,8 @@ import {
   mockSpecialists
 } from '../../mocks/data'
 
-// Создаем экземпляр axios с базовым URL
-const API_URL = import.meta.env.VITE_API_URL || 'https://api.example.com'
-
-const api = axios.create({
-  baseURL: API_URL,
-  headers: {
-    'Content-Type': 'application/json'
-  }
-})
-
 // Флаг для использования моковых данных
-const USE_MOCKS = true
-
-// Функция для имитации задержки сети
-const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+const USE_MOCKS = isMocksEnabled()
 
 export const fetchCities = async (): Promise<string[]> => {
   if (USE_MOCKS) {
@@ -35,7 +24,7 @@ export const fetchCities = async (): Promise<string[]> => {
     return mockCities
   }
 
-  const response = await api.get('/cities')
+  const response = await apiClient.get('/cities')
   return response.data
 }
 
@@ -51,7 +40,7 @@ export const fetchBranches = async (city?: string): Promise<IBranch[]> => {
   }
 
   const params = city ? { city } : {}
-  const response = await api.get('/branches', { params })
+  const response = await apiClient.get('/branches', { params })
   return response.data
 }
 
@@ -73,7 +62,7 @@ export const fetchSpecialists = async (
   }
 
   const params = { branchId, serviceIds: serviceIds?.join(',') }
-  const response = await api.get('/specialists', { params })
+  const response = await apiClient.get('/specialists', { params })
   return response.data
 }
 
@@ -114,7 +103,7 @@ export const fetchServices = async (
   }
 
   const params = { branchId, specialistId }
-  const response = await api.get('/services', { params })
+  const response = await apiClient.get('/services', { params })
   return response.data
 }
 
@@ -129,7 +118,7 @@ export const fetchAvailableDates = async (
   }
 
   const params = { branchId, specialistId, serviceIds: serviceIds.join(',') }
-  const response = await api.get('/available-dates', { params })
+  const response = await apiClient.get('/available-dates', { params })
   return response.data
 }
 
@@ -145,7 +134,7 @@ export const fetchTimeSlots = async (
   }
 
   const params = { branchId, specialistId, serviceIds: serviceIds.join(','), date }
-  const response = await api.get('/time-slots', { params })
+  const response = await apiClient.get('/time-slots', { params })
   return response.data
 }
 
@@ -187,7 +176,7 @@ export const createBooking = async (
   }
 
   try {
-    const response = await api.post('/bookings', bookingData)
+    const response = await apiClient.post('/bookings', bookingData)
     return { success: true, message: response.data.message }
   } catch (error: unknown) {
     if (
@@ -197,6 +186,9 @@ export const createBooking = async (
     ) {
       return { success: false, message: 'Дата и время уже заняты' }
     }
-    return { success: false, message: 'Произошла ошибка при создании записи' }
+    
+    // Используем новую обработку ошибок
+    const errorResult = handleApiError(error)
+    return { success: false, message: errorResult.message }
   }
 }
